@@ -62,7 +62,7 @@
 
     my ($stdout, $stderr) = capture $self->command;
     $self->out_fn->spew($stdout) if $self->has_out_fn;
-    $self->err_fn->spew($stderr) if $self->has_out_fn;
+    $self->err_fn->spew($stderr) if $self->has_err_fn;
  
   }
 
