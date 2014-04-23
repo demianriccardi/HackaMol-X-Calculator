@@ -62,8 +62,12 @@ my $obj;
   'Test creation of an obj with exe in_fn and scratch';
 
    warning_is { HackaMol::X::Calculator->new(mol   => $mol, map_in => $sub_cr) }
-    "BAD t->1 PDB Atom 0 serial 1 resname ASN has changed",
-      "carp warning for bad model in pdb file";
+    "has map_in and no in_fn to map to!",
+    "warning map_in no in_fn";
+
+   warning_is { HackaMol::X::Calculator->new(mol   => $mol, in_fn => 'foo.inp') }
+    "has in_fn and no map_in to map to it!",
+    "warning map_in no in_fn";
 
   dir_exists_ok($obj->scratch, 'scratch directory exists');
 
