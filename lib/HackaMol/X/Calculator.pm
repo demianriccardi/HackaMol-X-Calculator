@@ -2,38 +2,27 @@
   # ABSTRACT: Abstract calculator class for HackaMol
   use Moose::Util::TypeConstraints;
   use Moose;
+  use Carp;
   use File::chdir;
   with qw(HackaMol::ExeRole HackaMol::PathRole); 
 
-  has 'molecule'     => (
-                      is       => 'ro',
-                      isa      => 'HackaMol::Molecule',
-                      #required => 1,
-                      );
+  has 'molecule'  => (
+                      is        => 'ro',
+                      isa       => 'HackaMol::Molecule',
+                      required  => 1,
+                     );
 
   has 'map_in'    => (
-                      is       => 'rw',
-                      isa      => 'CodeRef',
-                      builder  => '_build_map_in',
-                      lazy     => 1,
-                      );
-  sub _build_map_in {
-    my $sub_rf = sub {return(@_)}; 
-    return ($sub_rf);
-  }
-
+                      is        => 'ro',
+                      isa       => 'CodeRef',
+                      predicate => 'has_map_in',
+                     );
   has 'map_out'   => (
-                      is       => 'rw',
-                      isa      => 'CodeRef',
-                      builder  => '_build_map_out',
-                      lazy     => 1,
-                      );
+                      is        => 'ro',
+                      isa       => 'CodeRef',
+                      predicate => 'has_map_out',
+                     );
 
-  sub _build_map_out {
-    my $sub_rf = sub {return(@_)}; 
-    return ($sub_rf);
-  }
-  
   #some setup
   sub BUILD {
     my $self = shift;
@@ -44,19 +33,37 @@
     #build command
     unless ($self->has_command) {
       my $cmd ;
-      $cmd = $self->exe              if $self->has_exe;
-      $cmd .= " ". $self->in_fn      if $self->has_in_fn;
-      $cmd .= " ". $self->exe_endops if $self->has_exe_endops;
+      $cmd = $self->exe                if $self->has_exe;
+      $cmd .= " "  . $self->in_fn      if $self->has_in_fn;
+      $cmd .= " "  . $self->exe_endops if $self->has_exe_endops;
+      # no cat of out_fn because we capture and then write in doit 
       $self->command($cmd) if $cmd;
-    }     
-
+    }    
+    if ($self->has_in_fn){ 
+      carp "has in_fn and no map_in to map to it!" unless($self->has_map_in);
+    }
+    else {
+      carp "has map_in and no in_fn to map to!" if($self->has_map_in);
+    }
+  
     return;
   }
 
   sub doit{
     my $self = shift;
     # always work in scratch if scratch is set
-    local $CWD = $self->scratch if ($self->has_scratch); 
+    local $CWD = $self->scratch if ($self->has_scratch);
+
+    # input file is not required to generate output!
+    if ($self->has_in_fn){
+      my $input = $self->map_in($self->mol); 
+      $self->in_fn->spew($input);
+    }
+
+    my ($stdout, $stderr) = capture $self->command;
+    $self->out_fn->spew($stdout) if $self->has_out_fn;
+    $self->err_fn->spew($stderr) if $self->has_out_fn;
+ 
   }
 
   __PACKAGE__->meta->make_immutable;
@@ -85,9 +92,12 @@ __END__
                     scratch  => 'realtmp/tmp',
                     map_in   => \&input_map,
                     map_out  => \&output_map,
+                    exe      => '~/bin/xyzenergy < ', # some magical executable
       );      
+      
+      $Calc->doit;
 
-      say $mol->energy;
+      printf ("Energy from xyz file: %10.6f\n", $mol->energy;
 
    }
 
