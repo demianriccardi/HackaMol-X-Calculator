@@ -6,7 +6,7 @@
   use File::chdir;
   with qw(HackaMol::ExeRole HackaMol::PathRole); 
 
-  has 'molecule'  => (
+  has 'mol'  => (
                       is        => 'ro',
                       isa       => 'HackaMol::Molecule',
                       required  => 1,
