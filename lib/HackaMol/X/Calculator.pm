@@ -3,6 +3,7 @@
   use Moose::Util::TypeConstraints;
   use Moose;
   use Carp;
+  use Capture::Tiny ':all';
   use File::chdir;
   with qw(HackaMol::ExeRole HackaMol::PathRole); 
 
@@ -32,39 +33,78 @@
     }
     #build command
     unless ($self->has_command) {
-      my $cmd ;
-      $cmd = $self->exe                if $self->has_exe;
-      $cmd .= " "  . $self->in_fn      if $self->has_in_fn;
-      $cmd .= " "  . $self->exe_endops if $self->has_exe_endops;
-      # no cat of out_fn because we capture and then write in doit 
-      $self->command($cmd) if $cmd;
+      return unless ($self->has_exe);
+      my $cmd = $self->build_command;
+      $self->command($cmd);
     }    
-    if ($self->has_in_fn){ 
-      carp "has in_fn and no map_in to map to it!" unless($self->has_map_in);
-    }
-    else {
-      carp "has map_in and no in_fn to map to!" if($self->has_map_in);
-    }
-  
+
     return;
   }
 
-  sub doit{
-    my $self = shift;
-    # always work in scratch if scratch is set
-    local $CWD = $self->scratch if ($self->has_scratch);
-
-    # input file is not required to generate output!
-    if ($self->has_in_fn){
-      my $input = $self->map_in($self->mol); 
-      $self->in_fn->spew($input);
-    }
-
-    my ($stdout, $stderr) = capture $self->command;
-    $self->out_fn->spew($stdout) if $self->has_out_fn;
-    $self->err_fn->spew($stderr) if $self->has_err_fn;
- 
+  sub build_command {
+      # the command won't be overwritten during build, but may be overwritten with this method
+      my $self = shift;
+      my $cmd ;
+      $cmd = $self->exe ;
+      $cmd .= " "  . $self->in_fn      if $self->has_in_fn;
+      $cmd .= " "  . $self->exe_endops if $self->has_exe_endops;
+      # no cat of out_fn because of options to run without writing, etc
+      return $cmd;
   }
+
+  sub map_input {
+    # pass everything and anything to map_in... i.e. keep @_ in tact
+    my ($self) = @_;
+    unless ($self->has_in_fn and $self->has_map_in){
+      carp "in_fn and map_in attrs required to map input";
+      return 0;
+    }
+    local $CWD = $self->scratch if ($self->has_scratch);
+    my $input = &{$self->map_in}(@_);    
+    # $self->in_fn->spew($input); leaving such actions inside the map_in coderef is more flexible
+    # too flexible?
+    return $input;
+  }
+
+  sub map_output {
+    # pass everything and anything to map_out... i.e. keep @_ in tact
+    my ($self) = @_;
+    unless ($self->has_out_fn and $self->has_map_out){
+      carp "out_fn and map_out attrs required to map output";
+      return 0;
+    }
+    local $CWD = $self->scratch if ($self->has_scratch);
+    my $output = &{$self->map_out}(@_);
+    return $output;
+  }
+
+  sub run_command {
+    # run it and return all that is captured
+    my $self= shift;
+    return 0 unless $self->has_command;
+    local $CWD = $self->scratch if ($self->has_scratch);
+    my ($stdout,$stderr,$exit) = capture {
+      system($self->command);
+    };
+    return ($stdout,$stderr,$exit); 
+  }  
+
+#  sub doit{
+#    my $self = shift;
+#    # always work in scratch if scratch is set
+#    local $CWD = $self->scratch if ($self->has_scratch);
+#
+#    # input file is not required to generate output!
+#    if ($self->has_in_fn){
+#      my $input = $self->map_in($self->mol); 
+#      $self->in_fn->spew($input);
+#    }
+#
+#    my ($stdout, $stderr) = capture $self->command;
+#    $self->out_fn->spew($stdout) if $self->has_out_fn;
+#    $self->err_fn->spew($stderr) if $self->has_err_fn;
+# 
+#  }
 
   __PACKAGE__->meta->make_immutable;
 

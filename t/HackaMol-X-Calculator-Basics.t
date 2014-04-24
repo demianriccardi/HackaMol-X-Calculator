@@ -9,7 +9,13 @@ use Test::Dir;
 use Test::Warn;
 use HackaMol::X::Calculator;
 use HackaMol;
+use Math::Vector::Real;
+use File::chdir;
 use Cwd;
+
+BEGIN {
+    use_ok('HackaMol::X::Calculator');
+}
 
 my $cwd = getcwd;
 # coderef
@@ -18,7 +24,7 @@ my $sub_cr = sub{return(@_)};
 {    # test HackaMol class attributes and methods
 
     my @attributes = qw(mol map_in map_out);
-    my @methods    = qw(doit);
+    my @methods    = qw(map_input map_output);
 
     my @roles = qw(HackaMol::ExeRole HackaMol::PathRole);
 
@@ -61,18 +67,23 @@ my $obj;
   }
   'Test creation of an obj with exe in_fn and scratch';
 
-   warning_is { HackaMol::X::Calculator->new(mol   => $mol, map_in => $sub_cr) }
-    "has map_in and no in_fn to map to!",
-    "warning map_in no in_fn";
-
-   warning_is { HackaMol::X::Calculator->new(mol   => $mol, in_fn => 'foo.inp') }
-    "has in_fn and no map_in to map to it!",
-    "warning map_in no in_fn";
-
   dir_exists_ok($obj->scratch, 'scratch directory exists');
-
   is($obj->command, $obj->exe . " " .$obj->in_fn,  "command set to exe and input");
   is($obj->scratch, "$cwd/t/tmp", "scratch directory");
+
+  lives_ok {
+    $obj = HackaMol::X::Calculator->new(mol   => $mol, exe => "foo.exe <",
+                                        map_in => $sub_cr, map_out => $sub_cr,
+                                        in_fn => "foo.inp", scratch => "t/tmp", 
+                                        command => "nonsense",
+                                        exe_endops => "tackon",
+                                       );
+  }
+  'test building of an obj with exisiting scratch  and command attr';
+  
+  is($obj->command, "nonsense",  "command attr not overwritten during build");
+  $obj->command($obj->build_command);
+  is($obj->command, $obj->exe . " " .$obj->in_fn . " ". $obj->exe_endops,  "command reset");
 
   $obj->scratch->remove_tree;
   dir_not_exists_ok("t/tmp", 'scratch directory deleted');
@@ -81,7 +92,11 @@ my $obj;
 
 { # test the map_in and map_out
 
-  $obj = HackaMol::X::Calculator->new(mol => $mol, in_fn => "foo.inp", map_in => $sub_cr, map_out => $sub_cr);
+  $obj = HackaMol::X::Calculator->new(
+                                      mol => $mol, 
+                                      in_fn => "foo.inp", map_in => $sub_cr, 
+                                      map_out => $sub_cr,
+  );
 
   my @tv = qw(1 2 3 4);
   my @def_map_in = &{$obj->map_in}(@tv);
