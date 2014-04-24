@@ -84,7 +84,7 @@ $obj = HackaMol::X::Calculator->new(
 $obj->map_input($header,0,1);
 my $input = $obj->in_fn->slurp;
 is ($input,$expect, "input written in home as expected");
-$obj->run_command;
+$obj->capture_command;
 my $distance = $obj->map_output(V(2,2,2));
 my $output = $obj->out_fn->slurp;
 is ($output,$expect, "command cp input output");
@@ -163,10 +163,10 @@ dir_not_exists_ok("t/tmp", 'scratch directory does not exist');
   is ($input0,$expect, "input as expected");
   is ($input1,$expect, "input written in scratch as expected");
 
-  my ($stdout,$stderr,$exit) = $obj->run_command; 
+  my ($stdout,$stderr,$exit) = $obj->capture_command; 
   is ($stdout, 0, 'return 0 if no command');
   $obj->command($command);
-  ($stdout,$stderr,$exit) = $obj->run_command; 
+  ($stdout,$stderr,$exit) = $obj->capture_command; 
 
   my $distance = $obj->map_output(V(1,1,1));
   my $output = $obj->out_fn->slurp;
@@ -175,8 +175,14 @@ dir_not_exists_ok("t/tmp", 'scratch directory does not exist');
 
   is (sprintf("%.4f",$distance), 
       sprintf("%.4f",sqrt(3)), "output mapped");
+
+  $obj->command("cat ". $obj->in_fn);
+  ($stdout,$stderr,$exit) = $obj->capture_command;
+  is ($stdout,$expect, "captured output from cat input");
+
   $CWD = $obj->homedir;
   $obj->scratch->remove_tree;
+
   dir_not_exists_ok("t/tmp", 'scratch directory deleted');
 
 }

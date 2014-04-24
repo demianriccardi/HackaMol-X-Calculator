@@ -78,7 +78,7 @@
     return $output;
   }
 
-  sub run_command {
+  sub capture_command {
     # run it and return all that is captured
     my $self= shift;
     return 0 unless $self->has_command;
