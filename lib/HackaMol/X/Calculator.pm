@@ -37,7 +37,6 @@
       my $cmd = $self->build_command;
       $self->command($cmd);
     }    
-
     return;
   }
 
@@ -79,7 +78,7 @@
   }
 
   sub capture_command {
-    # run it and return all that is captured
+    # run it and return all that is captured 
     my $self= shift;
     return 0 unless $self->has_command;
     local $CWD = $self->scratch if ($self->has_scratch);
@@ -154,5 +153,32 @@ __END__
      $mol->set_energy($mol->t, $ener);
    }
 
+=attr  mol
 
+isa HackaMol::Molecule that is ro and required
+
+=attr map_in
+
+isa CodeRef that is ro
+
+intended for mapping input files from molecular information, but it is completely
+flexible.
+
+=attr map_out
+
+isa CodeRef that is ro
+
+intended for mapping output files into molecular information, but it is completely
+flexible.
+
+=method map_input
+
+
+build_command 
+  sub map_input {
+  sub map_output {
+  sub capture_command {
+#  sub doit{
+   sub input_map {
+   sub output_map {
 
