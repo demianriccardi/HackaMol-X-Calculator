@@ -79,11 +79,16 @@
 
   sub capture_command {
     # run it and return all that is captured 
-    my $self= shift;
-    return 0 unless $self->has_command;
+    my $self    = shift;
+    my $command = shift;
+    unless ( defined($command) ){
+      return 0 unless $self->has_command;
+      $command = $self->command;
+    }
+
     local $CWD = $self->scratch if ($self->has_scratch);
     my ($stdout,$stderr,$exit) = capture {
-      system($self->command);
+      system($command);
     };
     return ($stdout,$stderr,$exit); 
   }  
@@ -153,6 +158,11 @@ __END__
      $mol->set_energy($mol->t, $ener);
    }
 
+=attr scratch
+
+Coerced to be 'Path::Tiny' via AbsPath. If scratch is set, all work is carried out in that 
+directory.  See HackaMol::PathRole for more information about the scracth attribute.
+
 =attr  mol
 
 isa HackaMol::Molecule that is ro and required
@@ -162,23 +172,46 @@ isa HackaMol::Molecule that is ro and required
 isa CodeRef that is ro
 
 intended for mapping input files from molecular information, but it is completely
-flexible.
+flexible. Used in map_input method.  Can also be directly ivoked,
+
+  &{$calc->map_in}(@args); 
+
+as any other subroutine would be.
 
 =attr map_out
 
-isa CodeRef that is ro
-
-intended for mapping output files into molecular information, but it is completely
-flexible.
+intended for mapping molecular information from output files, but it is completely
+flexible and analogous to map_in. 
 
 =method map_input
 
+changes to scratch directory, if set, and passes all arguments (including self) to 
+map_in CodeRef. Thus, any input writing must 
 
-build_command 
-  sub map_input {
-  sub map_output {
-  sub capture_command {
-#  sub doit{
-   sub input_map {
-   sub output_map {
+  $calc->map_input(@args);
+
+will invoke,
+
+  &{$calc->map_in}(@_);  #where @_ = ($self,@args)
+
+and return anything returned by the map_in function.
+
+=method map_output
+
+completely analogous to map_input.  Thus, the output must be opened and processed in the
+map_out function.
+
+=method build_command 
+
+builds the command from the attributes: exe, inputfn, exe_endops, if they exist, and returns
+the command.
+
+=method capture_command
+
+uses Capture::Tiny capture method to run the command using a system call. STDOUT, STDERR, are
+captured and returned.
+
+  my ($stdout, $stderr,@other) = capture { system()
+
+ 
 
