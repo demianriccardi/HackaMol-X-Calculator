@@ -77,7 +77,7 @@
     return $output;
   }
 
-  sub capture_command {
+  sub capture_sys_command {
     # run it and return all that is captured 
     my $self    = shift;
     my $command = shift;
@@ -126,6 +126,8 @@ __END__
                              name => "hackitup" , 
                              data => "local_pdbs",
                            );
+    
+   my $i = 0;
 
    foreach my $pdb ($hack->data->children(qr/\.pdb$/)){
 
@@ -135,21 +137,23 @@ __END__
                     molecule => $mol,
                     scratch  => 'realtmp/tmp',
                     in_fn    => 'calc.inp'
-                    out_fn   => 'calc.out'
+                    out_fn   => "calc-$i.out"
                     map_in   => \&input_map,
                     map_out  => \&output_map,
                     exe      => '~/bin/xyzenergy < ', 
       );     
  
       $Calc->map_input;
-      $Calc->capture_command;
+      $Calc->capture_sys_command;
       my $energy = $Calc->map_output(627.51);
 
       printf ("Energy from xyz file: %10.6f\n", $energy);
 
+      $i++;
+
    }
 
-   ######## our functions to map molecular info to input to output and back to molecular info
+   #  our functions to map molec info to input and from output
    sub input_map {
      my $calc = shift;
      $calc->mol->print_xyz($calc->in_fn);
@@ -161,6 +165,10 @@ __END__
      my @eners  = map { /ENERGY= (-\d+.\d+)/; $1*$conv } $calc->out_fn->lines; 
      return pop @eners;
    }
+
+=head1 DESCRIPTION
+
+Abstract calculator class for HackaMol. The HackaMol::X::Calculator extension generalizes molecular calculations using external programs. The Calculator class consumes roles provided by the HackaMol core that manages the running of executables... perhaps on files; perhaps in directories.  This extension is intended to provide a simple example of interfaces with external programs, which may be a little too flexible. New extensions can evolve from this starting point, in scripts, to more rigid encapsulated classes. 
 
 =attr scratch
 
@@ -210,7 +218,7 @@ map_out function.
 builds the command from the attributes: exe, inputfn, exe_endops, if they exist, and returns
 the command.
 
-=method capture_command
+=method capture_sys_command
 
 uses Capture::Tiny capture method to run a command using a system call. STDOUT, STDERR, are
 captured and returned.
@@ -219,9 +227,9 @@ captured and returned.
 
 the $command is taken from $calc->command unless the $command is passed,
 
-  $calc->capture_command($some_command);
+  $calc->capture_sys_command($some_command);
 
-capture_command returns ($stdout, $stderr,@other) or 0 if there is no command set.
+capture_sys_command returns ($stdout, $stderr,@other) or 0 if there is no command set.
 
  
 
