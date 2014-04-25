@@ -1,10 +1,12 @@
   package HackaMol::X::Calculator;
   # ABSTRACT: Abstract calculator class for HackaMol
-  use Moose::Util::TypeConstraints;
+  use 5.008;
   use Moose;
-  use Carp;
+  use Moose::Util::TypeConstraints;
   use Capture::Tiny ':all';
   use File::chdir;
+  use Carp;
+
   with qw(HackaMol::ExeRole HackaMol::PathRole); 
 
   has 'mol'  => (
