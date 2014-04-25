@@ -22,11 +22,11 @@ SYNOPSIS
     
        my $i = 0;
 
-       foreach my $pdb ($hack->data->children(qr/\.pdb$/)){
+       foreach my $pdb ( $hack -> data -> children( qr/\.pdb$/ ) ){
 
-         my $mol = $hack->read_file_mol($pdb);
+         my $mol = $hack -> read_file_mol( $pdb );
 
-         my $Calc = HackaMol::X::Calculator->new (
+         my $Calc = HackaMol::X::Calculator -> new (
                     molecule => $mol,
                     scratch  => 'realtmp/tmp',
                     in_fn    => 'calc.inp'
@@ -36,9 +36,9 @@ SYNOPSIS
                     exe      => '~/bin/xyzenergy < ', 
          );     
  
-         $Calc->map_input;
-         $Calc->capture_sys_command;
-         my $energy = $Calc->map_output(627.51);
+         $Calc -> map_input;
+         $Calc -> capture_sys_command;
+         my $energy = $Calc -> map_output(627.51);
 
          printf ("Energy from xyz file: %10.6f\n", $energy);
 
@@ -49,13 +49,13 @@ SYNOPSIS
        #  our functions to map molec info to input and from output
        sub input_map {
          my $calc = shift;
-         $calc->mol->print_xyz($calc->in_fn);
+         $calc -> mol -> print_xyz( $calc -> in_fn );
        }
 
        sub output_map {
          my $calc   = shift;
          my $conv   = shift;
-         my @eners  = map { /ENERGY= (-\d+.\d+)/; $1*$conv } $calc->out_fn->lines; 
+         my @eners  = map { /ENERGY= (-\d+.\d+)/; $1*$conv } $calc -> out_fn -> lines; 
          return pop @eners;
        }
 
