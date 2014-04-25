@@ -15,10 +15,10 @@ SYNOPSIS
        use HackaMol;
        use HackaMol::X::Calculator;
 
-       my $hack = HackaMol->new( 
+       my $hack = HackaMol -> new( 
                              name => "hackitup" , 
                              data => "local_pdbs",
-                           );
+       );
     
        my $i = 0;
 
