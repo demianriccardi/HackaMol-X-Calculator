@@ -134,28 +134,32 @@ __END__
       my $Calc = HackaMol::X::Calculator->new (
                     molecule => $mol,
                     scratch  => 'realtmp/tmp',
+                    in_fn    => 'calc.inp'
+                    out_fn   => 'calc.out'
                     map_in   => \&input_map,
                     map_out  => \&output_map,
-                    exe      => '~/bin/xyzenergy < ', # some magical executable
-      );      
-      
-      $Calc->doit;
+                    exe      => '~/bin/xyzenergy < ', 
+      );     
+ 
+      $Calc->map_input;
+      $Calc->capture_command;
+      my $energy = $Calc->map_output(627.51);
 
-      printf ("Energy from xyz file: %10.6f\n", $mol->energy;
+      printf ("Energy from xyz file: %10.6f\n", $energy);
 
    }
 
    ######## our functions to map molecular info to input to output and back to molecular info
    sub input_map {
-     my $mol = shift;
-     return $mol->str_xyz; # string with formatted xyz file
+     my $calc = shift;
+     $calc->mol->print_xyz($calc->in_fn);
    }
 
    sub output_map {
-     my $mol = shift;
-     my ($ener) = map {my @ener = split; $ener[1] } 
-                  grep {/ENERGY=.*\d/} @_;
-     $mol->set_energy($mol->t, $ener);
+     my $calc   = shift;
+     my $conv   = shift;
+     my @eners  = map { /ENERGY= (-\d+.\d+)/; $1*$conv } $calc->out_fn->lines; 
+     return pop @eners;
    }
 
 =attr scratch
@@ -208,10 +212,16 @@ the command.
 
 =method capture_command
 
-uses Capture::Tiny capture method to run the command using a system call. STDOUT, STDERR, are
+uses Capture::Tiny capture method to run a command using a system call. STDOUT, STDERR, are
 captured and returned.
 
-  my ($stdout, $stderr,@other) = capture { system()
+  my ($stdout, $stderr,@other) = capture { system($command) }
+
+the $command is taken from $calc->command unless the $command is passed,
+
+  $calc->capture_command($some_command);
+
+capture_command returns ($stdout, $stderr,@other) or 0 if there is no command set.
 
  
 
