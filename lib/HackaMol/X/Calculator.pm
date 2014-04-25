@@ -93,23 +93,6 @@
     return ($stdout,$stderr,$exit); 
   }  
 
-#  sub doit{
-#    my $self = shift;
-#    # always work in scratch if scratch is set
-#    local $CWD = $self->scratch if ($self->has_scratch);
-#
-#    # input file is not required to generate output!
-#    if ($self->has_in_fn){
-#      my $input = $self->map_in($self->mol); 
-#      $self->in_fn->spew($input);
-#    }
-#
-#    my ($stdout, $stderr) = capture $self->command;
-#    $self->out_fn->spew($stdout) if $self->has_out_fn;
-#    $self->err_fn->spew($stderr) if $self->has_err_fn;
-# 
-#  }
-
   __PACKAGE__->meta->make_immutable;
 
   1;
