@@ -8,6 +8,8 @@ my $hack = HackaMol->new(
                         );
   
 my $i = 0;
+
+
 my $scratch = path('realtmp/tmp');
  
 foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
@@ -47,6 +49,7 @@ sub input_map {
 sub output_map {
   my $calc   = shift;
   my $conv   = shift;
-  my @eners  = map { /Edisp \/kcal,au:\s+-\d+.\d+\s+(-\d+.\d+)/; $1*$conv } grep {/Edisp/} $calc->out_fn->lines;
-  return pop @eners;
+  my $out    = $calc->out_fn->slurp;
+  $out =~ m /Edisp \/kcal,au:\s+-\d+.\d+\s+(-\d+.\d+)/;
+  return ($1*$conv);
 }

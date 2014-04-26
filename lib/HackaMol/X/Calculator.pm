@@ -12,7 +12,6 @@
   has 'mol'  => (
                       is        => 'ro',
                       isa       => 'HackaMol::Molecule',
-                      required  => 1,
                      );
 
   has 'map_in'    => (
