@@ -47,8 +47,9 @@
       my $self = shift;
       my $cmd ;
       $cmd = $self->exe ;
-      $cmd .= " "  . $self->in_fn      if $self->has_in_fn;
-      $cmd .= " "  . $self->exe_endops if $self->has_exe_endops;
+      $cmd .= " "   . $self->in_fn->stringify      if $self->has_in_fn;
+      $cmd .= " "   . $self->exe_endops            if $self->has_exe_endops;
+      $cmd .= " > " . $self->out_fn->stringify     if $self->has_out_fn;
       # no cat of out_fn because of options to run without writing, etc
       return $cmd;
   }

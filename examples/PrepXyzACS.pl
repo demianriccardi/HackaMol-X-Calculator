@@ -12,22 +12,23 @@ system("wget $webyaml") unless (-e $yaml);
 my $data = LoadFile($yaml);
 my $xyzdir = path("xyzs");
 $xyzdir->mkpath unless $xyzdir->exists;
-$CWD = $xyzdir;
 
-foreach my $sol ( qw(aq) )
 {
-  foreach my $nw ( keys ( %{$data->{$sol}}  ) )
+  local $CWD = $xyzdir;
+
+  foreach my $sol ( qw(aq) )
   {
-    foreach my $config (keys ( %{ $data->{$sol}{$nw} }  ) )
+    foreach my $nw ( keys ( %{$data->{$sol}}  ) )
     {
-      #print Dump $data->{$sol}{$nw}{$config};
-      my $xyz = $data->{$sol}{$nw}{$config}{Z_xyz};
-      my $dump_xyz  = scalar(@{$xyz}) . "\n\n";
-      $dump_xyz    .= join ("\n", @{$xyz}); 
-      my $fxyz = path("$sol-$nw-$config.xyz");
-      $fxyz->spew($dump_xyz);
+      foreach my $config (keys ( %{ $data->{$sol}{$nw} }  ) )
+      {
+        my $xyz = $data->{$sol}{$nw}{$config}{Z_xyz};
+        my $dump_xyz  = scalar(@{$xyz}) . "\n\n";
+        $dump_xyz    .= join ("\n", @{$xyz}); 
+        my $fxyz = path("$sol-$nw-$config.xyz");
+        $fxyz->spew($dump_xyz);
+      }
     }
-  }
-
+  } 
 }
-
+system("perl xyz_xyz.pl");
