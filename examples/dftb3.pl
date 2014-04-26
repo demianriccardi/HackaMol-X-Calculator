@@ -1,3 +1,32 @@
+#!/usr/bin/env perl
+# DMR April 26, 2014
+#   
+#   perl examples/dftd3.pl   
+#
+# reads reads examples/xyzs 
+# and runs dftd3 xyz -func b3pw91 -bj 
+# and pulls the dispersion energy
+#
+# the xyz files are taken from the supporting info of
+# D. Riccardi, H.-B. Guo, J.M. Parks, B. Gu, L. Liang, J.C. Smith, 
+# Cluster-Continuum Calculations of Hydration Free Energies of Anions and Group 12 Divalent Cations, 
+# J. Chem. Theory Comput., 9, 555 (2013)
+# 
+# use PrepXyzACS.pl for setup
+#
+# uses the DFT-D3 program
+# by Stefan Grimme, Jens Antony, Stephan Ehrlich, and Helge Krieg
+# J. Chem. Phys. 132, 154104 (2010); DOI:10.1063/1.3382344
+#
+# with BJ-damping,
+# Stefan Grimme, Stephan Ehrlich and Lars Goerigk
+# J. Comput. Chem. 32, 1456 (2011); DOI:10.1002/jcc.21759
+# 
+# wget http://www.thch.uni-bonn.de/tc/downloads/DFT-D3/data/dftd3.tgz
+#
+# cd into directory and install with fortran compiler  (e.g. gfortran or intel's ifort)
+# may have to edit make file to use whichever compiler you have
+
 use Modern::Perl;
 use HackaMol;
 use HackaMol::X::Calculator;
