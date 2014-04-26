@@ -1,12 +1,14 @@
 use Modern::Perl;
 use HackaMol;
 use HackaMol::X::Calculator;
+use Path::Tiny;
  
 my $hack = HackaMol->new(
                           data => "examples/xyzs",
                         );
   
 my $i = 0;
+my $scratch = path('realtmp/tmp');
  
 foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
 {
@@ -14,7 +16,7 @@ foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
  
    my $Calc = HackaMol::X::Calculator->new (
                  mol        => $mol,
-                 scratch    => 'realtmp/tmp',
+                 scratch    => $scratch,
                  in_fn      => "bah$i.xyz",
                  out_fn     => "calc-$i.out",
                  map_in     => \&input_map,
@@ -33,6 +35,8 @@ foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
    $i++;
  
 }
+
+$scratch->remove_tree;
  
 #  our functions to map molec info to input and from output
 sub input_map {
