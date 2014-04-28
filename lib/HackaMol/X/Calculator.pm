@@ -157,7 +157,12 @@ The HackaMol::X::Calculator extension generalizes molecular calculations using e
 The Calculator class consumes roles provided by the HackaMol core that manages the running of 
 executables... perhaps on files; perhaps in directories.  This extension is intended to provide a 
 simple example of interfaces with external programs. It is probably too flexible. New extensions 
-can evolve from this starting point, in scripts, to more rigid encapsulated classes. 
+can evolve from this starting point, in scripts, to more rigid encapsulated classes. In the synopsis,
+The input is written (->map_input), the command is run (->capture_sys_command) and the output is 
+processed (->map_output).  Thus, the calculator can be used to 1. generate inputs, 2. run programs, 3. 
+process outputs.
+
+
 
 =attr scratch
 
