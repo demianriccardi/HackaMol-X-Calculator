@@ -39,10 +39,10 @@ my $obj;
 
 { # test basic functionality
 
-  dies_ok {
+  lives_ok {
     $obj = HackaMol::X::Calculator->new();
   }
-  'creation without required mol dies';
+  'creation without required mol lives';
   
   lives_ok {
     $obj = HackaMol::X::Calculator->new(mol => $mol);
