@@ -1,103 +1,111 @@
-  package HackaMol::X::Calculator;
-  # ABSTRACT: Abstract calculator class for HackaMol
-  use 5.008;
-  use Moose;
-  use Moose::Util::TypeConstraints;
-  use Capture::Tiny ':all';
-  use File::chdir;
-  use Carp;
+package HackaMol::X::Calculator;
 
-  with qw(HackaMol::ExeRole HackaMol::PathRole); 
+# ABSTRACT: Abstract calculator class for HackaMol
+use 5.008;
+use Moose;
+use Moose::Util::TypeConstraints;
+use Capture::Tiny ':all';
+use File::chdir;
+use Carp;
 
-  has 'mol'  => (
-                      is        => 'ro',
-                      isa       => 'HackaMol::Molecule',
-                     );
+with qw(HackaMol::ExeRole HackaMol::PathRole);
 
-  has 'map_in'    => (
-                      is        => 'ro',
-                      isa       => 'CodeRef',
-                      predicate => 'has_map_in',
-                     );
-  has 'map_out'   => (
-                      is        => 'ro',
-                      isa       => 'CodeRef',
-                      predicate => 'has_map_out',
-                     );
+has 'mol' => (
+    is  => 'ro',
+    isa => 'HackaMol::Molecule',
+);
 
-  #some setup
-  sub BUILD {
+has 'map_in' => (
+    is        => 'ro',
+    isa       => 'CodeRef',
+    predicate => 'has_map_in',
+);
+has 'map_out' => (
+    is        => 'ro',
+    isa       => 'CodeRef',
+    predicate => 'has_map_out',
+);
+
+#some setup
+sub BUILD {
     my $self = shift;
-    
-    if ($self->has_scratch){ 
-      $self->scratch->mkpath unless ($self->scratch->exists);
+
+    if ( $self->has_scratch ) {
+        $self->scratch->mkpath unless ( $self->scratch->exists );
     }
+
     #build command
-    unless ($self->has_command) {
-      return unless ($self->has_exe);
-      my $cmd = $self->build_command;
-      $self->command($cmd);
-    }    
+    unless ( $self->has_command ) {
+        return unless ( $self->has_exe );
+        my $cmd = $self->build_command;
+        $self->command($cmd);
+    }
     return;
-  }
+}
 
-  sub build_command {
-      # the command won't be overwritten during build, but may be overwritten with this method
-      my $self = shift;
-      my $cmd ;
-      $cmd = $self->exe ;
-      $cmd .= " "   . $self->in_fn->stringify      if $self->has_in_fn;
-      $cmd .= " "   . $self->exe_endops            if $self->has_exe_endops;
-      $cmd .= " > " . $self->out_fn->stringify     if $self->has_out_fn;
-      # no cat of out_fn because of options to run without writing, etc
-      return $cmd;
-  }
+sub build_command {
 
-  sub map_input {
+# the command won't be overwritten during build, but may be overwritten with this method
+    my $self = shift;
+    my $cmd;
+    $cmd = $self->exe;
+    $cmd .= " " . $self->in_fn->stringify    if $self->has_in_fn;
+    $cmd .= " " . $self->exe_endops          if $self->has_exe_endops;
+    $cmd .= " > " . $self->out_fn->stringify if $self->has_out_fn;
+
+    # no cat of out_fn because of options to run without writing, etc
+    return $cmd;
+}
+
+sub map_input {
+
     # pass everything and anything to map_in... i.e. keep @_ in tact
     my ($self) = @_;
-    unless ($self->has_in_fn and $self->has_map_in){
-      carp "in_fn and map_in attrs required to map input";
-      return 0;
+    unless ( $self->has_in_fn and $self->has_map_in ) {
+        carp "in_fn and map_in attrs required to map input";
+        return 0;
     }
-    local $CWD = $self->scratch if ($self->has_scratch);
-    my $input = &{$self->map_in}(@_);    
-    # $self->in_fn->spew($input); leaving such actions inside the map_in coderef is more flexible
-    # too flexible?
-    return $input;
-  }
+    local $CWD = $self->scratch if ( $self->has_scratch );
+    my $input = &{ $self->map_in }(@_);
 
-  sub map_output {
+# $self->in_fn->spew($input); leaving such actions inside the map_in coderef is more flexible
+# too flexible?
+    return $input;
+}
+
+sub map_output {
+
     # pass everything and anything to map_out... i.e. keep @_ in tact
     my ($self) = @_;
-    unless ($self->has_out_fn and $self->has_map_out){
-      carp "out_fn and map_out attrs required to map output";
-      return 0;
+    unless ( $self->has_out_fn and $self->has_map_out ) {
+        carp "out_fn and map_out attrs required to map output";
+        return 0;
     }
-    local $CWD = $self->scratch if ($self->has_scratch);
-    my $output = &{$self->map_out}(@_);
+    local $CWD = $self->scratch if ( $self->has_scratch );
+    my $output = &{ $self->map_out }(@_);
     return $output;
-  }
+}
 
-  sub capture_sys_command {
-    # run it and return all that is captured 
+sub capture_sys_command {
+
+    # run it and return all that is captured
     my $self    = shift;
     my $command = shift;
-    unless ( defined($command) ){
-      return 0 unless $self->has_command;
-      $command = $self->command;
+    unless ( defined($command) ) {
+        return 0 unless $self->has_command;
+        $command = $self->command;
     }
 
-    local $CWD = $self->scratch if ($self->has_scratch);
-    my ($stdout,$stderr,$exit) = capture {
-      system($command);
+    local $CWD = $self->scratch if ( $self->has_scratch );
+    my ( $stdout, $stderr, $exit ) = capture {
+        system($command);
     };
-    return ($stdout,$stderr,$exit); 
-  }  
+    return ( $stdout, $stderr, $exit );
+}
 
-  __PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;
 
-  1;
+1;
 
 __END__
 
