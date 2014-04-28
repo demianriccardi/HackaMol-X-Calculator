@@ -147,8 +147,9 @@ __END__
    sub output_map {
      my $calc   = shift;
      my $conv   = shift;
-     my @eners  = map { /ENERGY= (-\d+.\d+)/; $1*$conv } $calc->out_fn->lines; 
-     return pop @eners;
+     my @eners  = map { /ENERGY= (-*\d+.\d+)/; $1*$conv } 
+                  grep {/ENERGY= -*\d+.\d+/} $calc->out_fn->lines; 
+     return pop @eners; 
    }
 
 =head1 DESCRIPTION
