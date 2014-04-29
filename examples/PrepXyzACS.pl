@@ -31,4 +31,3 @@ $xyzdir->mkpath unless $xyzdir->exists;
     }
   } 
 }
-system("perl xyz_xyz.pl");
