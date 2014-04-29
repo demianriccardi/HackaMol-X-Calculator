@@ -2,6 +2,9 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.00_3    2014-04-28 10:37:57EDT-0400 America/New_York
+    * improved tests, adjusted synopsis
+
 0.00_2    2014-04-27 22:49:01EDT-0400 America/New_York
     * added examples, improved tests.  
 

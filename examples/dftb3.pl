@@ -39,7 +39,7 @@ my $hack = HackaMol->new(
 my $i = 0;
 
 
-my $scratch = path('realtmp/tmp');
+my $scratch = path('tmp');
  
 foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
 {
@@ -67,7 +67,7 @@ foreach my $xyz ( $hack->data->children( qr/\.xyz$/ ) )
  
 }
 
-$scratch->remove_tree;
+#$scratch->remove_tree;
  
 #  our functions to map molec info to input and from output
 sub input_map {
