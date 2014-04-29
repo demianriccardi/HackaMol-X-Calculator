@@ -3,7 +3,8 @@
 #   
 #   perl examples/g09_out.pl ~/some/path 
 # 
-# pull energies from gaussian outputs in directory (path submitted on commandline) 
+# pull energy from gaussian single-point outputs in directory (path submitted 
+# on commandline) 
 #
 
 use Modern::Perl;
