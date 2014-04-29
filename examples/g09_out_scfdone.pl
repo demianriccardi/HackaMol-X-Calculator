@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # DMR April 29, 2014
 #   
-#   perl examples/g09_out.pl ~/some/path 
+#   perl examples/g09_pdb.pl ~/some/path 
 # 
 # pull energy from gaussian single-point outputs in directory (path submitted 
 # on commandline) 
@@ -17,11 +17,6 @@ my $path = shift || die "pass path to gaussian outputs";
 my $hack = HackaMol->new(
                          data => $path,
                         );
-  
-my $i = 0;
-
-
-my $scratch = path('tmp');
  
 foreach my $out ( $hack->data->children( qr/\.out$/ ) )
 {
@@ -34,8 +29,6 @@ foreach my $out ( $hack->data->children( qr/\.out$/ ) )
    my $energy = $Calc->map_output(627.51);
    
    printf ("%-40s: %10.6f\n", $Calc->out_fn->basename, $energy);
- 
-   $i++;
  
 }
  
