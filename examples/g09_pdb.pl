@@ -51,6 +51,7 @@ sub output_map {
     my $resn  = shift || "TMP";
     my $resid = shift || 1;
     my @lines = $calc->out_fn->lines;
+
     #my @qs    = nbo_qs(@lines);
     my @qs    = mulliken_qs(@lines);
     my @atoms = Zxyz(@lines);
