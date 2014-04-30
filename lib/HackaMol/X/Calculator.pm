@@ -92,6 +92,8 @@ calculator can be used to:
   2. run programs
   3. process outputs
 
+via interactions with HackaMol objects.
+
 =attr scratch
 
 If scratch is set, the object will build that directory if needed.  See HackaMol::PathRole for more information about 

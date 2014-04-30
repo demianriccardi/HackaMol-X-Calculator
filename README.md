@@ -60,5 +60,5 @@ calculator can be used to:
   2. run programs
   3. process outputs
 
-
+via interactions with HackaMol objects.
 
