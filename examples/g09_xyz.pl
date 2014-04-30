@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# DMR April 29, 2014
+# DMR April 30, 2014
 #
 #   perl examples/g09_xyz.pl ~/some/path
 #
@@ -34,12 +34,7 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
 
     $Calc->map_output;
     my $mol = $Calc->mol;
-
-    my $fh = $mol->print_xyz($xyz);
-    foreach my $t ( 1 .. $mol->tmax ) {
-        $mol->t($t);
-        $mol->print_xyz($fh);
-    }
+    $mol->print_xyz_ts([0 .. $mol->tmax],$xyz);
 
 }
 

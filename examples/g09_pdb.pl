@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# DMR April 29, 2014
+# DMR April 30, 2014
 #
 #   perl examples/g09_pdb.pl ~/some/path
 #
@@ -36,12 +36,7 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
     my $mol = $Calc->mol;
 
     $_->bfact( $_->charge ) foreach $mol->all_atoms;
-
-    my $fh = $mol->print_pdb($pdb);
-    foreach my $t ( 1 .. $mol->tmax ) {
-        $mol->t($t);
-        $mol->print_pdb($fh);
-    }
+    $mol->print_pdb_ts([0 .. $mol->tmax], $pdb);
 
 }
 
