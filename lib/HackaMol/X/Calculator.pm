@@ -4,6 +4,7 @@ package HackaMol::X::Calculator;
 use 5.008;
 use Moose;
 use Moose::Util::TypeConstraints;
+use namespace::autoclean;
 use Capture::Tiny ':all';
 use File::chdir;
 use Carp;

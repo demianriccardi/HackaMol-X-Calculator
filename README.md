@@ -3,10 +3,10 @@ HackaMol-X-Calculator
 
 VERSION
 ========
-developer version 0.00_3 
+developer version 0.00_4 
 Available for testing from cpan.org:
 
-please see *[HackaMol::X::Calculator on MetaCPAN](https://metacpan.org/release/DEMIAN/HackaMol-X-Calculator-0.00_3) for formatted documentation.
+please see *[HackaMol::X::Calculator on MetaCPAN](https://metacpan.org/release/DEMIAN/HackaMol-X-Calculator-0.00_4) for formatted documentation.
 
 SYNOPSIS
 ========
