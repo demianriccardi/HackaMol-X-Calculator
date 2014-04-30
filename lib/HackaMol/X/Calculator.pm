@@ -3,6 +3,7 @@ package HackaMol::X::Calculator;
 # ABSTRACT: Abstract calculator class for HackaMol
 use 5.008;
 use Moose;
+use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Capture::Tiny ':all';
