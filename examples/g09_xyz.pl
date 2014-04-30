@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 # DMR April 29, 2014
 #
-#   perl examples/g09_pdb.pl ~/some/path
+#   perl examples/g09_xyz.pl ~/some/path
 #
-# pull coordinates (all) and charges from gaussian output (path submitted
+# pull coordinates (all) from gaussian output (path submitted
 # on commandline)
-# write out pdbs in tmp directory with charges in the bfactor column..
+# write out xyzs in tmp directory
 #
 
 use Modern::Perl;
@@ -29,18 +29,16 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
     );
 
     local $CWD = $Calc->scratch;
-    my $pdb = $Calc->out_fn->basename;
-    $pdb =~ s/\.out/\.pdb/;
+    my $xyz = $Calc->out_fn->basename;
+    $xyz =~ s/\.out/\.xyz/;
 
     $Calc->map_output;
     my $mol = $Calc->mol;
 
-    $_->bfact( $_->charge ) foreach $mol->all_atoms;
-
-    my $fh = $mol->print_pdb($pdb);
+    my $fh = $mol->print_xyz($xyz);
     foreach my $t ( 1 .. $mol->tmax ) {
         $mol->t($t);
-        $mol->print_pdb($fh);
+        $mol->print_xyz($fh);
     }
 
 }
@@ -51,23 +49,8 @@ sub output_map {
     my $resn  = shift || "TMP";
     my $resid = shift || 1;
     my @lines = $calc->out_fn->lines;
-    my @qs    = mulliken_qs(@lines);
     my @atoms = Zxyz(@lines);
-
-    die "number of charges not equal to number of atoms" if ( @qs != @atoms );
-
-    #add info for pdb printing
-    my $i = 1;
-    foreach my $at (@atoms) {
-        $at->serial($i);
-        $at->resname($resn);
-        $at->resid($resid);
-        $i++;
-    }
-
-    $atoms[$_]->push_charges( $qs[$_] ) foreach 0 .. $#qs;
     $calc->mol->push_atoms(@atoms);
-
 }
 
 sub Zxyz {
@@ -110,24 +93,5 @@ sub Zxyz {
 
     return @atoms;
 
-}
-
-sub mulliken_qs {
-    my @lines = @_;
-    my @imuls = grep { $lines[$_] =~ m/Mulliken atomic charges/ } 0 .. $#lines;
-    my @mull_ls =
-      grep { m/\s+\d+\s+\w+\s+-*\d+/ } @lines[ $imuls[0] .. $imuls[1] ];
-    my @mull_qs = map { $_->[2] } map { [split] } @mull_ls;
-    return @mull_qs;
-}
-
-sub nbo_qs {
-    my @lines = @_;
-    my @inbos =
-      grep { $lines[$_] =~ m/(\s){5}Natural Population/ } 0 .. $#lines;
-    my @nbo_ls =
-      grep { m/\s+\w+\s+\d+\s+-*\d+.\d+/ } @lines[ $inbos[0] .. $inbos[1] ];
-    my @nbo_qs = map { $_->[2] } map { [split] } @nbo_ls;
-    return @nbo_qs;
 }
 
