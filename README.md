@@ -11,58 +11,54 @@ please see *[HackaMol::X::Calculator on MetaCPAN](https://metacpan.org/release/D
 SYNOPSIS
 ========
 
-      use Modern::Perl;
-      use HackaMol;
-      use HackaMol::X::Calculator;
- 
-      my $hack = HackaMol->new( 
-                                name => "hackitup" , 
-                                data => "local_pdbs",
-                              );
+       use Modern::Perl;
+       use HackaMol;
+       use HackaMol::X::Calculator;
+       use Path::Tiny;
        
-      my $i = 0;
- 
-      foreach my $pdb ($hack->data->children(qr/\.pdb$/)){
- 
-         my $mol = $hack->read_file_mol($pdb);
- 
-         my $Calc = HackaMol::X::Calculator->new (
-                       molecule => $mol,
-                       scratch  => 'realtmp/tmp',
-                       in_fn    => 'calc.inp'
-                       out_fn   => "calc-$i.out"
-                       map_in   => \&input_map,
-                       map_out  => \&output_map,
-                       exe      => '~/bin/xyzenergy < ', 
-         );     
+       my $path = shift || die "pass path to gaussian outputs";
+       
+       my $hack = HackaMol->new( data => $path, );
+       
+       foreach my $out ( $hack->data->children(qr/\.out$/) ) {
   
-         $Calc->map_input;
-         $Calc->capture_sys_command;
-         my $energy = $Calc->map_output(627.51);
- 
-         printf ("Energy from xyz file: %10.6f\n", $energy);
- 
-         $i++;
- 
-      }
- 
-      #  our functions to map molec info to input and from output
-      sub input_map {
-        my $calc = shift;
-        $calc->mol->print_xyz($calc->in_fn);
-      }
- 
-      sub output_map {
-        my $calc   = shift;
-        my $conv   = shift;
-        my @eners  = map { /ENERGY= (-*\d+.\d+)/; $1*$conv } 
-                     grep {/ENERGY= -*\d+.\d+/} $calc->out_fn->lines; 
-        return pop @eners; 
-      }
+           my $Calc = HackaMol::X::Calculator->new(
+               out_fn  => $out,
+               map_out => \&output_map,
+           );
+       
+           my $energy = $Calc->map_output(627.51);
+       
+           printf( "%-40s: %10.6f\n", $Calc->out_fn->basename, $energy );
+       
+       }
+       
+       #  our function to map molec info from output
+       
+       sub output_map {
+           my $calc = shift;
+           my $conv = shift;
+           my $out  = $calc->out_fn->slurp;
+           $out =~ m /SCF Done:.*(-\d+.\d+)/;
+           return ( $1 * $conv );
+       }
 
 DESCRIPTION
 ============
 
-Abstract calculator class for HackaMol. The HackaMol::X::Calculator extension generalizes molecular calculations using external programs. The Calculator class consumes roles provided by the HackaMol core that manages the running of executables... perhaps on files; perhaps in directories.  This extension is intended to provide a simple example of interfaces with external programs.  It is probably a little too flexible. New extensions can evolve from this starting point, in scripts, to more rigid encapsulated classes. 
+The HackaMol::X::Calculator extension generalizes molecular calculations using external programs. 
+The Calculator class consumes the HackaMol::X::ExtensionRole role, which manage the running of executables... 
+perhaps on files; perhaps in directories.  This extension is intended to provide a 
+simple example of interfaces with external programs. This is a barebones use of the ExtensionRole that is 
+intended to be flexible. See the examples and testing directory for use of the map_in and map_out functions
+inside and outside of the map_input and map_output functions.  Extensions with more rigid and encapsulated 
+APIs can evolve from this starting point. In the synopsis, a Gaussian output is processed for the SCF Done
+value (a classic scripting of problem computational chemists).  See the examples and tests to learn how the 
+calculator can be used to: 
+
+  1. generate inputs 
+  2. run programs
+  3. process outputs
+
 
 
