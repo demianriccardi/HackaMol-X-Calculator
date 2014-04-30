@@ -3,7 +3,7 @@
 #
 #   perl examples/g09_pdb.pl ~/some/path
 #
-# pull coordinates (all) and charges from gaussian output (path submitted
+# pull coordinates (all) and charges from Gaussian output (path submitted
 # on commandline)
 # write out pdbs in tmp directory with charges in the bfactor column..
 #
@@ -51,6 +51,7 @@ sub output_map {
     my $resn  = shift || "TMP";
     my $resid = shift || 1;
     my @lines = $calc->out_fn->lines;
+    #my @qs    = nbo_qs(@lines);
     my @qs    = mulliken_qs(@lines);
     my @atoms = Zxyz(@lines);
 
@@ -116,7 +117,7 @@ sub mulliken_qs {
     my @lines = @_;
     my @imuls = grep { $lines[$_] =~ m/Mulliken atomic charges/ } 0 .. $#lines;
     my @mull_ls =
-      grep { m/\s+\d+\s+\w+\s+-*\d+/ } @lines[ $imuls[0] .. $imuls[1] ];
+      grep { m/\s+\d+\s+\w+\s+-*\d+/ } @lines[ $imuls[-2] .. $imuls[-1] ];
     my @mull_qs = map { $_->[2] } map { [split] } @mull_ls;
     return @mull_qs;
 }
@@ -125,8 +126,9 @@ sub nbo_qs {
     my @lines = @_;
     my @inbos =
       grep { $lines[$_] =~ m/(\s){5}Natural Population/ } 0 .. $#lines;
+    return 0 unless @inbos;
     my @nbo_ls =
-      grep { m/\s+\w+\s+\d+\s+-*\d+.\d+/ } @lines[ $inbos[0] .. $inbos[1] ];
+      grep { m/\s+\w+\s+\d+\s+-*\d+.\d+/ } @lines[ $inbos[-2] .. $inbos[-1] ];
     my @nbo_qs = map { $_->[2] } map { [split] } @nbo_ls;
     return @nbo_qs;
 }

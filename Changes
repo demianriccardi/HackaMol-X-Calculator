@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    * several new examples showing separation of input, running, output phases
+    * added examples for processing gaussian output from simple to not so simple
 
 0.00_3    2014-04-28 10:37:57EDT-0400 America/New_York
     * improved tests, adjusted synopsis

@@ -3,7 +3,7 @@
 #
 #   perl examples/g09_xyz.pl ~/some/path
 #
-# pull coordinates (all) from gaussian output (path submitted
+# pull coordinates (all) from Gaussian output (path submitted
 # on commandline)
 # write out xyzs in tmp directory
 #
