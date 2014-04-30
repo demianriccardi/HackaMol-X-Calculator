@@ -43,54 +43,37 @@ __PACKAGE__->meta->make_immutable;
 __END__
 
 =head1 SYNOPSIS
-    
+
    use Modern::Perl;
    use HackaMol;
    use HackaMol::X::Calculator;
+   use Path::Tiny;
+   
+   my $path = shift || die "pass path to gaussian outputs";
+   
+   my $hack = HackaMol->new( data => $path, );
+   
+   foreach my $out ( $hack->data->children(qr/\.out$/) ) {
 
-   my $hack = HackaMol->new( 
-                             name => "hackitup" , 
-                             data => "local_pdbs",
-                           );
-    
-   my $i = 0;
-
-   foreach my $pdb ($hack->data->children(qr/\.pdb$/)){
-
-      my $mol = $hack->read_file_mol($pdb);
-
-      my $Calc = HackaMol::X::Calculator->new (
-                    molecule => $mol,
-                    scratch  => 'realtmp/tmp',
-                    in_fn    => 'calc.inp'
-                    out_fn   => "calc-$i.out"
-                    map_in   => \&input_map,
-                    map_out  => \&output_map,
-                    exe      => '~/bin/xyzenergy < ', 
-      );     
- 
-      $Calc->map_input;
-      $Calc->capture_sys_command;
-      my $energy = $Calc->map_output(627.51);
-
-      printf ("Energy from xyz file: %10.6f\n", $energy);
-
-      $i++;
-
+       my $Calc = HackaMol::X::Calculator->new(
+           out_fn  => $out,
+           map_out => \&output_map,
+       );
+   
+       my $energy = $Calc->map_output(627.51);
+   
+       printf( "%-40s: %10.6f\n", $Calc->out_fn->basename, $energy );
+   
    }
-
-   #  our functions to map molec info to input and from output
-   sub input_map {
-     my $calc = shift;
-     $calc->mol->print_xyz($calc->in_fn);
-   }
-
+   
+   #  our function to map molec info from output
+   
    sub output_map {
-     my $calc   = shift;
-     my $conv   = shift;
-     my @eners  = map { /ENERGY= (-*\d+.\d+)/; $1*$conv } 
-                  grep {/ENERGY= -*\d+.\d+/} $calc->out_fn->lines; 
-     return pop @eners; 
+       my $calc = shift;
+       my $conv = shift;
+       my $out  = $calc->out_fn->slurp;
+       $out =~ m /SCF Done:.*(-\d+.\d+)/;
+       return ( $1 * $conv );
    }
 
 =head1 DESCRIPTION
@@ -101,8 +84,9 @@ perhaps on files; perhaps in directories.  This extension is intended to provide
 simple example of interfaces with external programs. This is a barebones use of the ExtensionRole that is 
 intended to be flexible. See the examples and testing directory for use of the map_in and map_out functions
 inside and outside of the map_input and map_output functions.  Extensions with more rigid and encapsulated 
-APIs can evolve from this starting point. In the synopsis, the input is written (->map_input), the command 
-is run (->capture_sys_command) and the output is processed (->map_output).  Thus, the calculator can be used to: 
+APIs can evolve from this starting point. In the synopsis, a Gaussian output is processed for the SCF Done
+value (a classic scripting of problem computational chemists).  See the examples and tests to learn how the 
+calculator can be used to: 
 
   1. generate inputs 
   2. run programs

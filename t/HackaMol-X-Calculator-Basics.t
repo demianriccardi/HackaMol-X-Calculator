@@ -20,7 +20,6 @@ BEGIN {
 my $cwd = getcwd;
 
 # coderef
-my $sub_cr = sub { return (@_) };
 
 {    # test HackaMol class attributes and methods
 
@@ -65,8 +64,6 @@ my $obj;
         $obj = HackaMol::X::Calculator->new(
             mol     => $mol,
             exe     => "foo.exe <",
-            map_in  => $sub_cr,
-            map_out => $sub_cr,
             in_fn   => "foo.inp",
             scratch => "t/tmp"
         );
@@ -85,8 +82,6 @@ my $obj;
         $obj = HackaMol::X::Calculator->new(
             mol        => $mol,
             exe        => "foo.exe <",
-            map_in     => $sub_cr,
-            map_out    => $sub_cr,
             in_fn      => "foo.inp",
             scratch    => "t/tmp",
             command    => "nonsense",
@@ -111,8 +106,6 @@ my $obj;
         $obj = HackaMol::X::Calculator->new(
             mol        => $mol,
             exe        => "foo.exe <",
-            map_in     => $sub_cr,
-            map_out    => $sub_cr,
             in_fn      => "foo.inp",
             scratch    => "t/tmp",
             out_fn     => "foo.out",
@@ -142,8 +135,6 @@ my $obj;
     $obj = HackaMol::X::Calculator->new(
         mol     => $mol,
         in_fn   => "foo.inp",
-        map_in  => $sub_cr,
-        map_out => $sub_cr,
     );
 
     my @tv          = qw(1 2 3 4);
