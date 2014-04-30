@@ -3,20 +3,24 @@
 #   
 #   perl examples/g09_pdb.pl ~/some/path 
 # 
-# pull energy from gaussian single-point outputs in directory (path submitted 
-# on commandline) 
+# pull coordinates (all) and charges from gaussian output (path submitted 
+# on commandline)
+# write out pdbs in tmp directory 
 #
 
 use Modern::Perl;
 use HackaMol;
 use HackaMol::X::Calculator;
+use Math::Vector::Real;
 use Path::Tiny;
+use File::chdir;
 
 my $path = shift || die "pass path to gaussian outputs";
  
 my $hack = HackaMol->new(
                          data => $path,
                         );
+
 
 foreach my $out ( $hack->data->children( qr/\.out$/ ) )
 {
@@ -25,27 +29,52 @@ foreach my $out ( $hack->data->children( qr/\.out$/ ) )
                  mol        => HackaMol::Molecule->new,
                  out_fn     => $out,
                  map_out    => \&output_map,
+                 scratch    => 'tmp',
    );    
     
-   my $qs = $Calc->map_output;
-   print $qs; 
- 
+   local $CWD = $Calc->scratch;
+   my $pdb = $Calc->out_fn->basename;
+   $pdb =~ s/\.out/\.pdb/; 
+
+   $Calc->map_output;
+   my $mol = $Calc->mol;
+
+   $_->bfact($_->charge) foreach $mol->all_atoms;
+
+   my $fh = $mol->print_pdb($pdb);
+   foreach my $t (1 .. $mol->tmax){
+    $mol->t($t);
+    $mol->print_pdb($fh); 
+   }
+
 }
  
 #  our function to map molec info from output
- use Data::Dumper;
 sub output_map {
   my $calc    = shift;
-  my $conv    = shift;
+  my $resn    = shift || "TMP";
+  my $resid   = shift || 1;
   my @lines   = $calc->out_fn->lines;
   my @qs      = mulliken_qs(@lines);
   my @atoms   = Zxyz(@lines);
-  print Dumper \@atoms;
-  return (join("_", @qs));
+
+  die "number of charges not equal to number of atoms" if (@qs != @atoms);
+  #add info for pdb printing
+  my $i = 1;
+  foreach my $at (@atoms){
+    $at->serial($i);
+    $at->resname($resn);
+    $at->resid($resid);
+    $i++;
+  }
+
+  $atoms[$_]->push_charges($qs[$_]) foreach 0 .. $#qs;
+  $calc->mol->push_atoms(@atoms);
+
 }
 
 sub Zxyz {
-  #pull all coordinates
+  #pull all coordinates... not at all optimized for speed!
   my @lines = @_;
   my @ati_zxyz = grep {m/(\s+\d+){3}(\s+-?\d+.\d+){3}/}
                  grep {
@@ -60,10 +89,25 @@ sub Zxyz {
   my @z        = map {$_->[5]}   @splits;
 
   my @atoms;
+
   foreach my $i (0 .. $#ati){
-    push @{$atoms[$ati[$i]]}, [$Z[$i],$x[$i],$y[$i],$z[$i]];
+
+    my $iat = $ati[$i];
+    my $Z   = $Z[$i];
+    my $xyz = V( $x[$i],$y[$i],$z[$i] );
+
+    if ($atoms[$iat]){
+      die "atomtype mismatch while reading multiple coordinates" if ($Z != $atoms[$iat]->Z); 
+      $atoms[$iat]->push_coords( $xyz );
+    }
+    else {
+      $atoms[$iat]= HackaMol::Atom->new(name=>'TMP', Z=>$Z, coords=>[$xyz]);
+      $atoms[$iat]->name($atoms[$iat]->symbol.$iat);
+    } 
   }  
+
   return @atoms;
+
 }
 
 sub mulliken_qs {
