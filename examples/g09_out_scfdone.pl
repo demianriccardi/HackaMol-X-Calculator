@@ -4,7 +4,7 @@
 #   perl examples/g09_pdb.pl ~/some/path 
 # 
 # pull energy from gaussian single-point outputs in directory (path submitted 
-# on commandline) 
+# on commandline) print in kcal mol-1
 #
 
 use Modern::Perl;
