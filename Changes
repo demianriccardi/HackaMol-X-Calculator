@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    * Factored out large part into HackaMol::X::Extension for reuse
+    * Consumes HackaMol::X::Extension
 
 0.00_4    2014-04-30 09:22:05EDT-0400 America/New_York
     * several new examples showing separation of input, running, output phases

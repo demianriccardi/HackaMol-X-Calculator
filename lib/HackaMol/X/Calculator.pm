@@ -6,29 +6,21 @@ use Moose;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
-use Capture::Tiny ':all';
-use File::chdir;
 use Carp;
 
-with qw(HackaMol::ExeRole HackaMol::PathRole);
+with qw(HackaMol::X::ExtensionRole);
 
-has 'mol' => (
-    is  => 'ro',
-    isa => 'HackaMol::Molecule',
-);
+sub _build_map_in{
+  my $sub_cr = sub { return (@_) };
+  return $sub_cr;
+}
 
-has 'map_in' => (
-    is        => 'ro',
-    isa       => 'CodeRef',
-    predicate => 'has_map_in',
-);
-has 'map_out' => (
-    is        => 'ro',
-    isa       => 'CodeRef',
-    predicate => 'has_map_out',
-);
+sub _build_map_out{
+  my $sub_cr = sub { return (@_) };
+  return $sub_cr;
+}
 
-#some setup
+
 sub BUILD {
     my $self = shift;
 
@@ -36,73 +28,12 @@ sub BUILD {
         $self->scratch->mkpath unless ( $self->scratch->exists );
     }
 
-    #build command
     unless ( $self->has_command ) {
         return unless ( $self->has_exe );
         my $cmd = $self->build_command;
         $self->command($cmd);
     }
     return;
-}
-
-sub build_command {
-
-# the command won't be overwritten during build, but may be overwritten with this method
-    my $self = shift;
-    my $cmd;
-    $cmd = $self->exe;
-    $cmd .= " " . $self->in_fn->stringify    if $self->has_in_fn;
-    $cmd .= " " . $self->exe_endops          if $self->has_exe_endops;
-    $cmd .= " > " . $self->out_fn->stringify if $self->has_out_fn;
-
-    # no cat of out_fn because of options to run without writing, etc
-    return $cmd;
-}
-
-sub map_input {
-
-    # pass everything and anything to map_in... i.e. keep @_ in tact
-    my ($self) = @_;
-    unless ( $self->has_in_fn and $self->has_map_in ) {
-        carp "in_fn and map_in attrs required to map input";
-        return 0;
-    }
-    local $CWD = $self->scratch if ( $self->has_scratch );
-    my $input = &{ $self->map_in }(@_);
-
-# $self->in_fn->spew($input); leaving such actions inside the map_in coderef is more flexible
-# too flexible?
-    return $input;
-}
-
-sub map_output {
-
-    # pass everything and anything to map_out... i.e. keep @_ in tact
-    my ($self) = @_;
-    unless ( $self->has_out_fn and $self->has_map_out ) {
-        carp "out_fn and map_out attrs required to map output";
-        return 0;
-    }
-    local $CWD = $self->scratch if ( $self->has_scratch );
-    my $output = &{ $self->map_out }(@_);
-    return $output;
-}
-
-sub capture_sys_command {
-
-    # run it and return all that is captured
-    my $self    = shift;
-    my $command = shift;
-    unless ( defined($command) ) {
-        return 0 unless $self->has_command;
-        $command = $self->command;
-    }
-
-    local $CWD = $self->scratch if ( $self->has_scratch );
-    my ( $stdout, $stderr, $exit ) = capture {
-        system($command);
-    };
-    return ( $stdout, $stderr, $exit );
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -165,76 +96,29 @@ __END__
 =head1 DESCRIPTION
 
 The HackaMol::X::Calculator extension generalizes molecular calculations using external programs. 
-The Calculator class consumes roles provided by the HackaMol core that manages the running of 
-executables... perhaps on files; perhaps in directories.  This extension is intended to provide a 
-simple example of interfaces with external programs. It is probably too flexible. New extensions 
-can evolve from this starting point, in scripts, to more rigid encapsulated classes. In the synopsis,
-The input is written (->map_input), the command is run (->capture_sys_command) and the output is 
-processed (->map_output).  Thus, the calculator can be used to 1. generate inputs, 2. run programs, 3. 
-process outputs.
+The Calculator class consumes the HackaMol::X::ExtensionRole role, which manage the running of executables... 
+perhaps on files; perhaps in directories.  This extension is intended to provide a 
+simple example of interfaces with external programs. This is a barebones use of the ExtensionRole that is 
+intended to be flexible. See the examples and testing directory for use of the map_in and map_out functions
+inside and outside of the map_input and map_output functions.  Extensions with more rigid and encapsulated 
+APIs can evolve from this starting point. In the synopsis, the input is written (->map_input), the command 
+is run (->capture_sys_command) and the output is processed (->map_output).  Thus, the calculator can be used to: 
 
-
+  1. generate inputs 
+  2. run programs
+  3. process outputs
 
 =attr scratch
 
-Coerced to be 'Path::Tiny' via AbsPath. If scratch is set, all work is carried out in that 
-directory.  See HackaMol::PathRole for more information about the scracth attribute.
+If scratch is set, the object will build that directory if needed.  See HackaMol::PathRole for more information about 
+the scratch attribute.
 
-=attr  mol
+=head1 SEE ALSO
 
-isa HackaMol::Molecule that is ro and required
-
-=attr map_in
-
-isa CodeRef that is ro
-
-intended for mapping input files from molecular information, but it is completely
-flexible. Used in map_input method.  Can also be directly ivoked,
-
-  &{$calc->map_in}(@args); 
-
-as any other subroutine would be.
-
-=attr map_out
-
-intended for mapping molecular information from output files, but it is completely
-flexible and analogous to map_in. 
-
-=method map_input
-
-changes to scratch directory, if set, and passes all arguments (including self) to 
-map_in CodeRef. Thus, any input writing must 
-
-  $calc->map_input(@args);
-
-will invoke,
-
-  &{$calc->map_in}(@_);  #where @_ = ($self,@args)
-
-and return anything returned by the map_in function.
-
-=method map_output
-
-completely analogous to map_input.  Thus, the output must be opened and processed in the
-map_out function.
-
-=method build_command 
-
-builds the command from the attributes: exe, inputfn, exe_endops, if they exist, and returns
-the command.
-
-=method capture_sys_command
-
-uses Capture::Tiny capture method to run a command using a system call. STDOUT, STDERR, are
-captured and returned.
-
-  my ($stdout, $stderr,@other) = capture { system($command) }
-
-the $command is taken from $calc->command unless the $command is passed,
-
-  $calc->capture_sys_command($some_command);
-
-capture_sys_command returns ($stdout, $stderr,@other) or 0 if there is no command set.
-
+=for :list
+* L<HackaMol>
+* L<HackaMol::X::Extension>
+* L<HackaMol::PathRole>
+* L<Path::Tiny>
  
 
