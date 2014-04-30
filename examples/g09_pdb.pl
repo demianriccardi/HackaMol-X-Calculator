@@ -5,7 +5,7 @@
 # 
 # pull coordinates (all) and charges from gaussian output (path submitted 
 # on commandline)
-# write out pdbs in tmp directory 
+# write out pdbs in tmp directory with charges in the bfactor column..
 #
 
 use Modern::Perl;
@@ -43,8 +43,8 @@ foreach my $out ( $hack->data->children( qr/\.out$/ ) )
 
    my $fh = $mol->print_pdb($pdb);
    foreach my $t (1 .. $mol->tmax){
-    $mol->t($t);
-    $mol->print_pdb($fh); 
+     $mol->t($t);
+     $mol->print_pdb($fh); 
    }
 
 }
