@@ -49,6 +49,7 @@ my $obj;
     }
     'creation of an obj with mol';
 
+    is( $obj->build_command, 0, "build_command set to 0 with no exe" );
     dir_not_exists_ok( "t/tmp", 'scratch directory does not exist yet' );
 
     lives_ok {
