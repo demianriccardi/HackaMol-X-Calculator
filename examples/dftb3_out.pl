@@ -43,7 +43,7 @@ foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
 sub output_map {
     my $calc = shift;
     my $conv = shift;
-    my $out  = $calc->out_fn->slurp;
-    $out =~ m /Edisp \/kcal,au:\s+-\d+.\d+\s+(-\d+.\d+)/;
-    return ( $1 * $conv );
+    my $re   = qr/-\d+.\d+/; 
+    my @energys  = $calc->out_fn->slurp =~ m /Edisp \/kcal,au:\s+${re}\s+(${re})/g;
+    return ( $energys[-1] * $conv );
 }

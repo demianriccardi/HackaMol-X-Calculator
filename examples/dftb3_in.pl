@@ -15,22 +15,22 @@ use Path::Tiny;
 
 my $hack = HackaMol->new( data => "examples/xyzs", );
 
-my $i = 0;
+my $scratch = $hack->data;
 
-my $scratch = path('tmp');
+foreach my $xyz ( grep {!/^symbol_/} $hack->data->children(qr/\.xyz$/) ) {
 
-foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
     my $mol = $hack->read_file_mol($xyz);
+    my $sym_xyz = 'symbol_' . $xyz->basename;
 
+    say $sym_xyz;
     my $Calc = HackaMol::X::Calculator->new(
         mol     => $mol,
         scratch => $scratch,
-        in_fn   => "bah$i.xyz",
+        in_fn   => $sym_xyz,
         map_in  => \&input_map,
-
     );
+
     $Calc->map_input;
-    $i++;
 
 }
 

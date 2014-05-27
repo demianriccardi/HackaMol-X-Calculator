@@ -63,7 +63,7 @@ foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
 
 }
 
-$scratch->remove_tree;
+#$scratch->remove_tree;
 
 #  our functions to map molec info to input and from output
 sub input_map {
