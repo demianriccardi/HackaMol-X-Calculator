@@ -26,7 +26,7 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
 
     my $energy = $Calc->map_output(627.51);
 
-    printf( "%-40s: %10.6f\n", $Calc->out_fn->basename, $energy );
+    printf( "%-40s: %10.2f\n", $Calc->out_fn->basename, $energy );
 
 }
 
@@ -35,7 +35,10 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
 sub output_map {
     my $calc = shift;
     my $conv = shift;
-    my $out  = $calc->out_fn->slurp;
-    $out =~ m /SCF Done:.*(-\d+.\d+)/;
-    return ( $1 * $conv );
+    my $re = qr/-\d+.\d+/;
+    # match the slurped string for regex matched
+    # multiple scf dones for optimizations... take last one
+    # http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators
+    my @energys = $calc->out_fn->slurp =~ m/SCF Done:.*(${re})/;
+    return ( $energys[-1] * $conv );
 }
