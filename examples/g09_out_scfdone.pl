@@ -3,16 +3,16 @@
 #
 #   perl examples/g09_pdb.pl ~/some/path
 #
-# pull energies from a directory (~/some/path) of Gaussian outputs 
+# pull energies from a directory (~/some/path) of Gaussian outputs
 # and print in kcal/mol.
 #
 # The regex in output_map will return the last match. This is relevant
 #   for optimizations that will print an energy for each step. As
 #   an exercise, create a new script, based on this one, that takes
-#   output files from optimization runs (~/some/path/*_opt.out) and 
-#   calculates the energy difference between the initial structure and 
+#   output files from optimization runs (~/some/path/*_opt.out) and
+#   calculates the energy difference between the initial structure and
 #   the final structure.
-#  
+#
 
 use Modern::Perl;
 use HackaMol;
@@ -23,7 +23,7 @@ my $path = shift || die "pass path to gaussian outputs";
 
 my $hack = HackaMol->new( data => $path, );
 
-foreach my $out ($hack->data->children(qr/\.out$/) ) {
+foreach my $out ( $hack->data->children(qr/opt\.out$/) ) {
 
     my $Calc = HackaMol::X::Calculator->new(
         out_fn  => $out,
@@ -41,7 +41,8 @@ foreach my $out ($hack->data->children(qr/\.out$/) ) {
 sub output_map {
     my $calc = shift;
     my $conv = shift;
-    my $re = qr/-\d+.\d+/;
+    my $re   = qr/-\d+.\d+/;
+
     # match the slurped string for regex matched
     # multiple scf dones for optimizations... take last one
     # http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators
