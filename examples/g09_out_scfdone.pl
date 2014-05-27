@@ -1,12 +1,18 @@
 #!/usr/bin/env perl
-# DMR April 29, 2014
+# DMR May 27, 2014
 #
 #   perl examples/g09_pdb.pl ~/some/path
 #
-# pull energy from Gaussian single-point outputs in directory (path submitted
-# on commandline) print in kcal mol-1
+# pull energies from a directory (~/some/path) of Gaussian outputs 
+# and print in kcal/mol.
 #
-#
+# The regex in output_map will return the last match. This is relevant
+#   for optimizations that will print an energy for each step. As
+#   an exercise, create a new script, based on this one, that takes
+#   output files from optimization runs (~/some/path/*_opt.out) and 
+#   calculates the energy difference between the initial structure and 
+#   the final structure.
+#  
 
 use Modern::Perl;
 use HackaMol;
@@ -17,7 +23,7 @@ my $path = shift || die "pass path to gaussian outputs";
 
 my $hack = HackaMol->new( data => $path, );
 
-foreach my $out ( $hack->data->children(qr/\.out$/) ) {
+foreach my $out ($hack->data->children(qr/\.out$/) ) {
 
     my $Calc = HackaMol::X::Calculator->new(
         out_fn  => $out,
@@ -30,7 +36,7 @@ foreach my $out ( $hack->data->children(qr/\.out$/) ) {
 
 }
 
-#  our function to map molec info from output
+#  our function to pull the final energy from an output
 
 sub output_map {
     my $calc = shift;
@@ -39,6 +45,6 @@ sub output_map {
     # match the slurped string for regex matched
     # multiple scf dones for optimizations... take last one
     # http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators
-    my @energys = $calc->out_fn->slurp =~ m/SCF Done:.*(${re})/;
+    my @energys = $calc->out_fn->slurp =~ m/SCF Done:.*(${re})/g;
     return ( $energys[-1] * $conv );
 }
