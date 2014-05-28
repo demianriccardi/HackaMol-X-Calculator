@@ -75,7 +75,7 @@ sub output_map {
     my $calc = shift;
     my $conv = shift;
     my $re   = qr/-\d+.\d+/;
-    my @energys  = $calc->out_fn->slurp =~ m /Edisp \/kcal,au:\s+${re}\s+(${re})/g;
-    return ( $energys[-1] * $conv );
+    my ($energy)  = $calc->out_fn->slurp =~ m /Edisp \/kcal,au:\s+${re}\s+(${re})/;
+    return ( $energy * $conv );
 }
 
