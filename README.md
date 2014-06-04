@@ -38,9 +38,9 @@ SYNOPSIS
        sub output_map {
            my $calc = shift;
            my $conv = shift;
-           my $out  = $calc->out_fn->slurp;
-           $out =~ m /SCF Done:.*(-\d+.\d+)/;
-           return ( $1 * $conv );
+           my $re   = qr/-\d+.\d+/;
+           my @energys = $calc->out_fn->slurp =~ m/SCF Done:.*(${re})/g;
+           return ( $energys[-1] * $conv );
        }
 
 DESCRIPTION
