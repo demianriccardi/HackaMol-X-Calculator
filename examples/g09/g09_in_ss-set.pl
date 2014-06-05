@@ -1,5 +1,10 @@
 #!/usr/bin/env perl
 # Demian Riccardi, June 3, 2014
+#
+# This example takes a molecule with a disulfide (or modified disulfide 
+# R-S-Hg-S-R), rotates the R-S...S-R dihedral to a setting and then  
+# generates a Gaussian 09 input for the B3PW91/[SDD/]6-31+G** level of 
+#
 use Modern::Perl;
 use HackaMol;
 use HackaMol::X::Calculator;
@@ -7,13 +12,13 @@ use lib 'basis_sets';
 use YAML::XS;
 use Path::Tiny;
 
-##############################################################
-# load in the molecule and initialize charge and multiplicity#
-##############################################################
+###############################################################################
+#                  load in the molecule and initialize charge and multiplicity#
+###############################################################################
 my $bldr = new HackaMol;
-my $file = path(shift); # or die "pass xyz/pdb file";
+my $file = path(shift);                           # or die "pass xyz/pdb file";
 my $dang = shift or die "pass target dihedral";
-my $name = $file->basename(qr/\..*/); 
+my $name = $file->basename(qr/\..*/);
 my $mol  = $bldr->read_file_mol($file);
 $mol->multiplicity(1);
 $mol->push_charges(0);
@@ -56,27 +61,27 @@ delete( $atoms_rotate->{ $Ss[1]->iatom } );
 my $group_rotate =
   HackaMol::AtomGroup->new( atoms => [ @atoms[ keys %{$atoms_rotate} ] ] );
 
-
 ##############################################################################
 #          Set up basis sets and input parameters for G09 input              #
 ##############################################################################
-my $opt = 'opt=modredun freq'; # set to space if single point
-my $thr = 'b3pw91';
+my $opt    = 'opt=modredun freq';    # set to space if single point
+my $thr    = 'b3pw91';
 my $nbasis = '631+gss_opt';
 
 my @basis =
   map { HackaMol::Atom->new( symbol => $_ ) } keys %{ $mol->bin_atoms };
+$_->has_ecp(1) foreach (grep {$_->symbol =~ m/Cu|Zn|Cd|Hg/} @basis); 
 
 $_->basis('6-31+G**') foreach @basis;
-do{
-   $_->basis('SDD');
-   $_->ecp('SDD');
-  } foreach grep {$_->has_ecp} @basis;
+do {
+    $_->basis('SDD');
+    $_->ecp('SDD');
+  }
+  foreach grep { $_->has_ecp } @basis;
 
 # set the modred entry for gaussian
 my @modred =
   ( sprintf( "D %i %i %i %i F", map { $_->serial } $dihe->all_atoms ) );
-
 
 my %g09_param = (
     ppn     => 1,
@@ -102,21 +107,19 @@ my $Calc = HackaMol::X::Calculator->new(
     mol     => $mol,
     scratch => "carver_SS.g09/gas/$thr",
     in_fn   => 'tmp.inp',
-    map_in  => \&g09_input,    # pass anonymous subroutine
+    map_in  => \&g09_input,                # pass anonymous subroutine
 );
-
 
 ##############################################################################
 #    print out input for a single  dihedral angle                            #
 ##############################################################################
 
-    my $pname = sprintf("$name\_%03d\.$nbasis",$dang);
-    $mol->dihedral_rotate_groups( $dihe, $dihe->dihe_deg - $dang,
-        $group_rotate );
-    $mol->print_xyz;
-    $Calc->in_fn("$pname.inp");
-    $g09_param{Chk}="$pname.chk";
-    $Calc->map_input( \%g09_param );
+my $pname = sprintf( "$name\_%03d\.$nbasis", $dang );
+$mol->dihedral_rotate_groups( $dihe, $dihe->dihe_deg - $dang, $group_rotate );
+$mol->print_xyz;
+$Calc->in_fn("$pname.inp");
+$g09_param{Chk} = "$pname.chk";
+$Calc->map_input( \%g09_param );
 
 exit;
 
