@@ -6,8 +6,6 @@ use HackaMol::X::Calculator;
 use lib 'basis_sets';
 use YAML::XS;
 use Path::Tiny;
-use AugCcPv_t_z_pp;
-use AugCcPv_td_z;
 
 ##############################################################
 # load in the molecule and initialize charge and multiplicity#
@@ -64,39 +62,16 @@ my $group_rotate =
 ##############################################################################
 my $opt = 'opt=modredun freq'; # set to space if single point
 my $thr = 'b3pw91';
+my $nbasis = '631+gss_opt';
 
 my @basis =
   map { HackaMol::Atom->new( symbol => $_ ) } keys %{ $mol->bin_atoms };
 
-
-foreach my $at (@basis) {
-    if ( $at->symbol eq 'S' ) {
-        $at->basis( $AugCcPv_td_z::basis{ $at->symbol } )
-          if $AugCcPv_td_z::basis{ $at->symbol };
-
-        $at->ecp( $AugCcPv_td_z::ecp{ $at->symbol } )
-          if $AugCcPv_td_z::ecp{ $at->symbol };
-    }
-    else {
-        $at->basis( $AugCcPv_t_z_pp::basis{ $at->symbol } )
-          if $AugCcPv_t_z_pp::basis{ $at->symbol };
-
-        $at->ecp( $AugCcPv_t_z_pp::ecp{ $at->symbol } )
-          if $AugCcPv_t_z_pp::ecp{ $at->symbol };
-    }
-}
-
-my $nbasis = 'aTZ';
-
-#throw out the big basis above for optimization...
-if ($opt =~ m/opt/){
-  $_->basis('6-31+G**') foreach @basis;
-  do{
-     $_->basis('SDD'); 
-     $_->ecp('SDD');
-    } foreach grep {$_->has_ecp} @basis;
-  $nbasis = '631+gss_opt';
-}
+$_->basis('6-31+G**') foreach @basis;
+do{
+   $_->basis('SDD');
+   $_->ecp('SDD');
+  } foreach grep {$_->has_ecp} @basis;
 
 # set the modred entry for gaussian
 my @modred =
