@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 # Demian Riccardi, June 3, 2014
 #
-# This example takes a molecule with a disulfide (or modified disulfide 
-# R-S-Hg-S-R), rotates the R-S...S-R from 0 to 180 in steps of 10, and  
-# generates Gaussian 09 inputs for the B3PW91/[SDD/]6-31+G** level of 
-# theory.
+# This example takes an xyz/pdb file of a molecule with a disulfide 
+# (or modified disulfide R-S-Hg-S-R), rotates the R-S...S-R from 0 
+# to 180 in steps of 10, and  generates Gaussian 09 inputs for the 
+# B3PW91/[SDD/]6-31+G** level of theory.
 #
 use Modern::Perl;
 use HackaMol;
