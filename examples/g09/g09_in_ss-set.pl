@@ -13,7 +13,7 @@ use YAML::XS;
 use Path::Tiny;
 
 ###############################################################################
-#                  load in the molecule and initialize charge and multiplicity#
+#          load in the molecule and initialize charge and multiplicity        #
 ###############################################################################
 my $bldr = new HackaMol;
 my $file = path(shift);                           # or die "pass xyz/pdb file";
@@ -70,7 +70,7 @@ my $nbasis = '631+gss_opt';
 
 my @basis =
   map { HackaMol::Atom->new( symbol => $_ ) } keys %{ $mol->bin_atoms };
-$_->has_ecp(1) foreach (grep {$_->symbol =~ m/Cu|Zn|Cd|Hg/} @basis); 
+$_->ecp(1) foreach (grep {$_->symbol =~ m/Cu|Zn|Cd|Hg/} @basis);
 
 $_->basis('6-31+G**') foreach @basis;
 do {
