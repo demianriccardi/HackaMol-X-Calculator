@@ -38,7 +38,7 @@ my $i = 0;
 
 my $scratch = path('tmp');
 
-foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
+foreach my $xyz (grep {!/symbol/} $hack->data->children(qr/\.xyz$/) ) {
     my $mol = $hack->read_file_mol($xyz);
 
     my $Calc = HackaMol::X::Calculator->new(
@@ -74,7 +74,8 @@ sub input_map {
 sub output_map {
     my $calc = shift;
     my $conv = shift;
-    my $out  = $calc->out_fn->slurp;
-    $out =~ m /Edisp \/kcal,au:\s+-\d+.\d+\s+(-\d+.\d+)/;
-    return ( $1 * $conv );
+    my $re   = qr/-\d+.\d+/;
+    my ($energy)  = $calc->out_fn->slurp =~ m /Edisp \/kcal,au:\s+${re}\s+(${re})/;
+    return ( $energy * $conv );
 }
+

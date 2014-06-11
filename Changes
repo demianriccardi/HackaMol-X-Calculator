@@ -1,6 +1,10 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    * better examples and documentation
+
+0.00_6    2014-05-02 21:01:07EDT-0400 America/New_York
+    * update pod. dependencies
 
 0.00_5    2014-04-30 15:28:58EDT-0400 America/New_York
     * Factored out large part into HackaMol::X::Extension for reuse

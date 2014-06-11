@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# DMR April 29, 2014
+# DMR May 27, 2014
 #
 #   perl examples/dftd3_out.pl
 #
@@ -15,17 +15,11 @@ use Path::Tiny;
 
 my $hack = HackaMol->new( data => "examples/xyzs", );
 
-my $i = 0;
-
-my $scratch = path('tmp');
-
-foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
-    my $mol = $hack->read_file_mol($xyz);
+foreach my $out ( $hack->data->children(qr/symbol_.+\.out$/) ) {
 
     my $Calc = HackaMol::X::Calculator->new(
-        mol     => $mol,
-        scratch => $scratch,
-        out_fn  => "calc-$i.out",
+        scratch => $hack->data,
+        out_fn  => $out,
         map_out => \&output_map,
 
     );
@@ -34,8 +28,6 @@ foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
 
     printf( "Energy from xyz file: %10.6f\n", $energy );
 
-    $i++;
-
 }
 
 #  our function to map molec info from output
@@ -43,7 +35,7 @@ foreach my $xyz ( $hack->data->children(qr/\.xyz$/) ) {
 sub output_map {
     my $calc = shift;
     my $conv = shift;
-    my $out  = $calc->out_fn->slurp;
-    $out =~ m /Edisp \/kcal,au:\s+-\d+.\d+\s+(-\d+.\d+)/;
-    return ( $1 * $conv );
+    my $re   = qr/-\d+.\d+/; 
+    my @energys  = $calc->out_fn->slurp =~ m /Edisp \/kcal,au:\s+${re}\s+(${re})/g;
+    return ( $energys[-1] * $conv );
 }
