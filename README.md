@@ -1,17 +1,14 @@
 HackaMol-X-Calculator
 =====================
 
-VERSION
+VERSION 0.01
 ========
-developer version 0.00_6 
-Available for testing from cpan.org:
 
-please see *[HackaMol::X::Calculator on MetaCPAN](https://metacpan.org/release/DEMIAN/HackaMol-X-Calculator-0.00_6) for formatted documentation.
+please see *[HackaMol::X::Calculator on MetaCPAN](https://metacpan.org/release/DEMIAN/HackaMol-X-Calculator) for formatted documentation.
 
 SYNOPSIS
 ========
 
-       use Modern::Perl;
        use HackaMol;
        use HackaMol::X::Calculator;
        use Path::Tiny;
