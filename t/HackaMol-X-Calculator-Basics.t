@@ -26,7 +26,7 @@ my $cwd = getcwd;
     my @attributes = qw(mol map_in map_out);
     my @methods    = qw(map_input map_output);
 
-    my @roles = qw(HackaMol::ExeRole HackaMol::PathRole);
+    my @roles = qw(HackaMol::Roles::ExeRole HackaMol::Roles::PathRole);
 
     map has_attribute_ok( 'HackaMol::X::Calculator', $_ ), @attributes;
     map can_ok( 'HackaMol::X::Calculator', $_ ), @methods;
