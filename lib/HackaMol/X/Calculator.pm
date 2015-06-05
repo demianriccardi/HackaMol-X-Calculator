@@ -8,7 +8,7 @@ use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Carp;
 
-with qw(HackaMol::X::ExtensionRole);
+with qw(HackaMol::X::Roles::ExtensionRole);
 
 sub _build_map_in{
   my $sub_cr = sub { return (@_) };
@@ -92,7 +92,7 @@ __END__
 =head1 DESCRIPTION
 
 The HackaMol::X::Calculator extension generalizes molecular calculations using external programs. 
-The Calculator class consumes the HackaMol::X::ExtensionRole role, which manage the running of executables... 
+The Calculator class consumes the HackaMol::X::Roles::ExtensionRole role, which manage the running of executables... 
 perhaps on files; perhaps in directories.  This extension is intended to provide a 
 simple example of interfaces with external programs. This is a barebones use of the ExtensionRole that is 
 intended to be flexible. See the examples and testing directory for use of the map_in and map_out functions
@@ -116,7 +116,7 @@ the scratch attribute.
 
 =for :list
 * L<HackaMol>
-* L<HackaMol::X::Extension>
+* L<HackaMol::X::Roles::Extension>
 * L<HackaMol::PathRole>
 * L<Path::Tiny>
  
